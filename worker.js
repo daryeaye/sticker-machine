@@ -22,19 +22,19 @@ function sanitizeCode(code) {
 }
 
 /*
-  New 5+3 structure:
-  positions 1-5 = payload
-  positions 6-8 = check
+  9-letter structure:
+  positions 1-6 = payload
+  positions 7-9 = check
 */
 
-function computeCheckLetters(payload5) {
-  const p = payload5.split("").map(charToNum);
+function computeCheckLetters(payload6) {
+  const p = payload6.split("").map(charToNum);
 
-  if (payload5.length !== 5 || p.some(v => v < 0)) {
+  if (payload6.length !== 6 || p.some(v => v < 0)) {
     throw new Error("Invalid payload");
   }
 
-  const [p1, p2, p3, p4, p5] = p;
+  const [p1, p2, p3, p4, p5, p6] = p;
 
   const c1 = (
     7 * p1 +
@@ -42,8 +42,10 @@ function computeCheckLetters(payload5) {
     13 * p3 +
     17 * p4 +
     19 * p5 +
-    3 * p1 * p3 +
-    5
+    23 * p6 +
+    3 * p1 * p4 +
+    5 * p2 +
+    9
   ) % 26;
 
   const c2 = (
@@ -52,7 +54,9 @@ function computeCheckLetters(payload5) {
     23 * p3 +
     7 * p4 +
     11 * p5 +
-    2 * p2 * p4 +
+    13 * p6 +
+    2 * p2 * p5 +
+    p1 * p6 +
     8
   ) % 26;
 
@@ -62,7 +66,8 @@ function computeCheckLetters(payload5) {
     5 * p3 +
     3 * p4 +
     7 * p5 +
-    p1 * p5 +
+    11 * p6 +
+    p3 * p6 +
     12
   ) % 26;
 
@@ -72,10 +77,10 @@ function computeCheckLetters(payload5) {
 function isValidStickerCode(code) {
   const clean = sanitizeCode(code);
 
-  if (clean.length !== 8) return false;
+  if (clean.length !== 9) return false;
 
-  const payload = clean.slice(0, 5);
-  const givenCheck = clean.slice(5);
+  const payload = clean.slice(0, 6);
+  const givenCheck = clean.slice(6);
   const expectedCheck = computeCheckLetters(payload);
 
   return givenCheck === expectedCheck;
@@ -98,9 +103,9 @@ export default {
           );
         }
 
-        if (code.length !== 8) {
+        if (code.length !== 9) {
           return jsonResponse(
-            { success: false, message: "Please enter an 8-letter code." },
+            { success: false, message: "Please enter a 9-letter code." },
             400
           );
         }
