@@ -21,22 +21,52 @@ function sanitizeCode(code) {
   return (code || "").toUpperCase().replace(/[^A-Z]/g, "");
 }
 
-// 4-letter payload + 4-letter check
-function computeCheckLetters(payload) {
-  const p = payload.split("").map(charToNum);
+/*
+  New 5+3 structure:
+  positions 1-5 = payload
+  positions 6-8 = check
+*/
 
-  if (payload.length !== 4 || p.some(v => v < 0)) {
+function computeCheckLetters(payload5) {
+  const p = payload5.split("").map(charToNum);
+
+  if (payload5.length !== 5 || p.some(v => v < 0)) {
     throw new Error("Invalid payload");
   }
 
-  const [p1, p2, p3, p4] = p;
+  const [p1, p2, p3, p4, p5] = p;
 
-  const c1 = (11 * p1 + 7 * p2 + 5 * p3 + 3 * p4 + p1 * p3 + 13) % 26;
-  const c2 = (3 * p1 + 17 * p2 + 9 * p3 + 5 * p4 + p2 * p4 + 7) % 26;
-  const c3 = (19 * p1 + 11 * p2 + 3 * p3 + 7 * p4 + p1 * p4 + 5) % 26;
-  const c4 = (5 * p1 + 13 * p2 + 17 * p3 + 11 * p4 + p1 * p2 + p3 * p4 + 9) % 26;
+  const c1 = (
+    7 * p1 +
+    11 * p2 +
+    13 * p3 +
+    17 * p4 +
+    19 * p5 +
+    3 * p1 * p3 +
+    5
+  ) % 26;
 
-  return numToChar(c1) + numToChar(c2) + numToChar(c3) + numToChar(c4);
+  const c2 = (
+    5 * p1 +
+    3 * p2 +
+    23 * p3 +
+    7 * p4 +
+    11 * p5 +
+    2 * p2 * p4 +
+    8
+  ) % 26;
+
+  const c3 = (
+    19 * p1 +
+    2 * p2 +
+    5 * p3 +
+    3 * p4 +
+    7 * p5 +
+    p1 * p5 +
+    12
+  ) % 26;
+
+  return numToChar(c1) + numToChar(c2) + numToChar(c3);
 }
 
 function isValidStickerCode(code) {
@@ -44,8 +74,8 @@ function isValidStickerCode(code) {
 
   if (clean.length !== 8) return false;
 
-  const payload = clean.slice(0, 4);
-  const givenCheck = clean.slice(4);
+  const payload = clean.slice(0, 5);
+  const givenCheck = clean.slice(5);
   const expectedCheck = computeCheckLetters(payload);
 
   return givenCheck === expectedCheck;
@@ -101,10 +131,10 @@ export default {
             );
           }
 
-return jsonResponse(
-  { success: false, message: "Database error." },
-  500
-);
+          return jsonResponse(
+            { success: false, message: "Database error." },
+            500
+          );
         }
       } catch (e) {
         return jsonResponse(
