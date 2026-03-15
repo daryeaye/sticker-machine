@@ -525,8 +525,9 @@
           ctx.drawImage(img, 0, 0, w, h);
 
           const fontSize = Math.max(22, Math.round(w * 0.06));
-          ctx.font = `${fontSize}px Arial`;
-          ctx.textBaseline = 'bottom';
+  await document.fonts.load(`${fontSize}px "Kelly Slab"`);
+  ctx.font = `${fontSize}px "Kelly Slab"`;
+  ctx.textBaseline = 'bottom';
 
           const paddingX = Math.round(fontSize * 0.45);
           const paddingY = Math.round(fontSize * 0.3);
