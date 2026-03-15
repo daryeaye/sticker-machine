@@ -1,6 +1,12 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sticker-machine",
   "main": "worker.js",
-  "compatibility_date": "2026-03-15"
+  "compatibility_date": "2026-03-15",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "sticker-codes-db",
+      "database_id": "f65c03e0-5a72-4567-8738-2784adcb5fac"
+    }
+  ]
 }
