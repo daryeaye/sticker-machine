@@ -102,7 +102,7 @@ export default {
           }
 
 return jsonResponse(
-  { success: false, message: "Database error.", details: String(e) },
+  { success: false, message: "Database error." },
   500
 );
         }
