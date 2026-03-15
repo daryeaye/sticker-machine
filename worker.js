@@ -101,10 +101,10 @@ export default {
             );
           }
 
-          return jsonResponse(
-            { success: false, message: "Database error." },
-            500
-          );
+return jsonResponse(
+  { success: false, message: "Database error.", details: String(e) },
+  500
+);
         }
       } catch (e) {
         return jsonResponse(
