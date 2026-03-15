@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sticker Collection Vending Machine</title>
   <link href="https://fonts.googleapis.com/css2?family=Kelly+Slab&family=Audiowide&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     :root {
       --panel-bg: rgba(0, 0, 0, 0.45);
@@ -500,31 +499,88 @@
         _nameInput.focus();
       };
 
-      const _downloadScreenshot = () => {
-        const userName = _nameInput.value.trim();
-        const screenshotContainer = document.getElementById('screenshotContainer');
+const _downloadScreenshot = () => {
+  const userName = _nameInput.value.trim();
+  const imgEl = document.querySelector('#screenshotContainer .sticker-img');
 
-        if (!userName || !_imageUrlGlobal || !screenshotContainer) {
-          alert('Missing image or name. Please try again.');
-          return;
-        }
+  if (!userName || !imgEl || !_imageUrlGlobal) {
+    alert('Missing image or name. Please try again.');
+    return;
+  }
 
-        html2canvas(screenshotContainer, {
-          useCORS: true,
-          backgroundColor: null,
-          scale: 2
-        }).then(canvas => {
-          const imageData = canvas.toDataURL('image/png');
-          const downloadLink = document.createElement('a');
-          downloadLink.href = imageData;
-          downloadLink.download = `${userName}.png`;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-        }).catch(error => {
-          alert('Error capturing screenshot: ' + error);
-        });
-      };
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+
+    canvas.width = w;
+    canvas.height = h;
+
+    // Keep transparent background by not filling the canvas
+    ctx.clearRect(0, 0, w, h);
+
+    // Draw the sticker image at full opacity
+    ctx.globalAlpha = 1;
+    ctx.drawImage(img, 0, 0, w, h);
+
+    // Draw name label
+    const fontSize = Math.max(22, Math.round(w * 0.06));
+    ctx.font = `${fontSize}px Kelly Slab, Arial`;
+    ctx.textBaseline = 'bottom';
+
+    const paddingX = Math.round(fontSize * 0.45);
+    const paddingY = Math.round(fontSize * 0.3);
+    const text = userName;
+    const textWidth = ctx.measureText(text).width;
+
+    const boxW = textWidth + paddingX * 2;
+    const boxH = fontSize + paddingY * 2;
+
+    const x = w - boxW - 12;
+    const y = h - boxH - 12;
+
+    // Dark semi-transparent box
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.42)';
+    roundRect(ctx, x, y, boxW, boxH, 10);
+    ctx.fill();
+
+    // White text
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    ctx.fillText(text, x + paddingX, y + boxH - paddingY);
+
+    const imageData = canvas.toDataURL('image/png');
+    const downloadLink = document.createElement('a');
+    downloadLink.href = imageData;
+    downloadLink.download = `${userName}.png`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
+  img.onerror = () => {
+    alert('Could not load the sticker image for download.');
+  };
+
+  img.src = _imageUrlGlobal;
+};
+
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
 
       _codeInput.addEventListener('input', () => {
         const cursorAtEnd = _codeInput.selectionStart === _codeInput.value.length;
