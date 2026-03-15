@@ -203,6 +203,31 @@
       to { transform: rotate(360deg); }
     }
 
+    .countdown-number {
+      font-family: 'Audiowide', cursive;
+      font-size: clamp(72px, 14vw, 120px);
+      line-height: 1;
+      margin: 8px 0;
+      color: var(--accent);
+      text-shadow: 0 0 18px rgba(255, 233, 107, 0.35);
+      animation: pulseCount 0.75s ease;
+    }
+
+    @keyframes pulseCount {
+      0% {
+        transform: scale(0.55);
+        opacity: 0;
+      }
+      40% {
+        transform: scale(1.08);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
     .output-container {
       display: flex;
       flex-direction: column;
@@ -214,6 +239,30 @@
       position: relative;
       display: inline-block;
       background: transparent;
+    }
+
+    .sticker-pop {
+      animation: stickerPop 0.7s cubic-bezier(0.2, 1.2, 0.3, 1);
+      transform-origin: center bottom;
+    }
+
+    @keyframes stickerPop {
+      0% {
+        transform: translateY(80px) scale(0.2);
+        opacity: 0;
+      }
+      45% {
+        transform: translateY(-10px) scale(1.08);
+        opacity: 1;
+      }
+      70% {
+        transform: translateY(4px) scale(0.96);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
     }
 
     .sticker-img {
@@ -350,7 +399,7 @@
         .replace(/'/g, '&#039;');
 
       const _showMessage = (text, type = '') => {
-        _resultBox.innerHTML = `<p class="message ${type}">${text}</p>`;
+        _resultBox.innerHTML = `<p class="message ${type}">${_escapeHtml(text)}</p>`;
       };
 
       const _showProcessing = () => {
@@ -365,7 +414,7 @@
         _resultBox.innerHTML = `
           <p class="message success">${_escapeHtml(message)}</p>
           <div class="output-container">
-            <div class="ic" id="screenshotContainer">
+            <div class="ic sticker-pop" id="screenshotContainer">
               <img class="sticker-img" src="${imageUrl}" alt="Sticker" crossorigin="anonymous">
               <div class="wm">${_escapeHtml(userName)}</div>
             </div>
@@ -377,6 +426,21 @@
       };
 
       const _delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+      const _countdownReveal = async (userName, imageUrl, message) => {
+        const steps = ['3', '2', '1'];
+
+        for (const step of steps) {
+          _resultBox.innerHTML = `
+            <p class="message success">Code accepted!</p>
+            <div class="countdown-number">${step}</div>
+            <p class="placeholder-text">Your sticker is coming...</p>
+          `;
+          await _delay(800);
+        }
+
+        _showSticker(userName, imageUrl, message);
+      };
 
       const _submitInfo = async () => {
         const userName = _nameInput.value.trim();
@@ -416,7 +480,11 @@
             return;
           }
 
-          _showSticker(userName, _pickStickerUrl(), result.message || 'Code accepted! Here is your sticker.');
+          await _countdownReveal(
+            userName,
+            _pickStickerUrl(),
+            result.message || 'Code accepted! Here is your sticker.'
+          );
         } catch (error) {
           _showMessage('Network error. Please try again.', 'error');
         }
